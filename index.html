@@ -1,184 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Selena 💖 Valentine</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<title>Selena 💖 Valentine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffe6eb, #ffd1dc);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #ffe6eb, #ffd1dc);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
 
-    h1 {
-      font-size: 2.4rem;
-      margin-bottom: 25px;
-      z-index: 2;
-    }
+  h1 { font-size: 2.4rem; margin-bottom: 25px; }
 
-    button {
-      font-size: 1.4rem;
-      padding: 14px 28px;
-      margin: 12px;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-    }
+  button {
+    font-size: 1.4rem;
+    padding: 14px 28px;
+    margin: 12px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+  }
 
-    #yesBtn {
-      background-color: #ff4d6d;
-      color: white;
-      z-index: 2;
-    }
+  #yesBtn { background-color: #ff4d6d; color: white; z-index:2;}
+  #noBtn { background-color: #bfbfbf; position: fixed; z-index:2;}
 
-    #noBtn {
-      background-color: #bfbfbf;
-      position: fixed;
-      z-index: 2;
-    }
+  .heart {
+    position: fixed;
+    font-size: 20px;
+    animation: floatUp linear infinite;
+    opacity: 0.7;
+    pointer-events: none;
+  }
 
-    /* Hearts */
-    .heart {
-      position: fixed;
-      font-size: 20px;
-      animation: floatUp linear infinite;
-      opacity: 0.75;
-      pointer-events: none;
-    }
+  @keyframes floatUp { from { transform: translateY(110vh); } to { transform: translateY(-10vh); } }
 
-    @keyframes floatUp {
-      from { transform: translateY(110vh); }
-      to { transform: translateY(-10vh); }
-    }
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    animation: fall 3s linear forwards;
+    pointer-events: none;
+  }
 
-    /* Confetti */
-    .confetti {
-      position: fixed;
-      width: 10px;
-      height: 10px;
-      animation: fall 3s linear forwards;
-      pointer-events: none;
-    }
+  @keyframes fall { from { transform: translateY(-10vh) rotate(0deg); opacity:1; } to { transform: translateY(100vh) rotate(360deg); opacity:0; } }
 
-    @keyframes fall {
-      from { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-      to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-    }
+  .final-buttons button { background-color: #ff4d6d; color: white; }
+  .stop-btn { background-color: #999; }
 
-    .final-buttons button {
-      background-color: #ff4d6d;
-      color: white;
-    }
-
-    .stop-btn {
-      background-color: #999;
-    }
-  </style>
+  #tapOverlay {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(255,255,255,0.9);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2rem;
+    z-index: 10;
+    cursor: pointer;
+    text-align: center;
+    padding:20px;
+  }
+</style>
 </head>
 
 <body>
 
-  <h1 id="question">Selena, will you be my Valentine? 💖</h1>
+<h1 id="question">Selena, will you be my Valentine? 💖</h1>
 
-  <div id="controls">
-    <button id="yesBtn">Yes ❤️</button>
-    <button id="noBtn">No 😐</button>
-  </div>
+<div id="controls">
+  <button id="yesBtn">Yes ❤️</button>
+  <button id="noBtn">No 😐</button>
+</div>
 
-  <script>
-    /* FLOATING HEARTS */
-    function createHeart() {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.textContent = "❤️";
-      heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = 6 + Math.random() * 6 + "s";
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 12000);
+<!-- Audio -->
+<audio id="song" preload="auto">
+  <source src="hey-daddy.mp3" type="audio/mpeg">
+</audio>
+
+<div id="tapOverlay" style="display:none;">Tap to start music 🎶</div>
+
+<script>
+  /* HEARTS */
+  setInterval(() => {
+    const h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = "❤️";
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.animationDuration = 6 + Math.random() * 6 + "s";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 12000);
+  }, 450);
+
+  const yesBtn = document.getElementById("yesBtn");
+  const noBtn = document.getElementById("noBtn");
+  const song = document.getElementById("song");
+  const tapOverlay = document.getElementById("tapOverlay");
+
+  let yesScale = 1;
+
+  /* NO BUTTON RUNAWAY + YES SCALE */
+  noBtn.addEventListener("click", () => {
+    noBtn.style.left = Math.random() * (window.innerWidth - 120) + "px";
+    noBtn.style.top = Math.random() * (window.innerHeight - 80) + "px";
+    yesScale += 0.25;
+    yesBtn.style.transform = `scale(${yesScale})`;
+  });
+
+  /* YES CLICK → SHOW TAP OVERLAY */
+  yesBtn.addEventListener("click", () => {
+    document.getElementById("question").style.display = "none";
+    document.getElementById("controls").style.display = "none";
+    tapOverlay.style.display = "flex";
+  });
+
+  /* TAP OVERLAY → PLAY MUSIC + SHOW FINAL SCREEN */
+  tapOverlay.addEventListener("click", () => {
+    tapOverlay.style.display = "none";
+
+    // Play song
+    song.currentTime = 0;
+    song.volume = 0.7;
+    song.play();
+
+    // Final screen
+    const finalScreen = document.createElement("div");
+    finalScreen.innerHTML = `
+      <h1>YAY!! 💕🥰<br><br>Can’t wait 💝</h1>
+      <div class="final-buttons">
+        <button onclick="song.play()">Replay 🎶</button>
+        <button class="stop-btn" onclick="song.pause()">Stop ⏹️</button>
+      </div>
+    `;
+    document.body.appendChild(finalScreen);
+
+    // Confetti
+    for(let i=0;i<120;i++){
+      const c = document.createElement("div");
+      c.className="confetti";
+      c.style.left = Math.random()*100 + "vw";
+      c.style.backgroundColor =
+        ["#ff4d6d","#ffd1dc","#ff99ac","#ffffff"][Math.floor(Math.random()*4)];
+      c.style.animationDuration = 2 + Math.random()*2 + "s";
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),3000);
     }
-    setInterval(createHeart, 450);
-
-    /* MUSIC (iOS-SAFE) */
-    let song;
-
-    function playSong() {
-      if (!song) {
-        song = new Audio(
-          "https://archive.org/download/usher-heydaddy/Usher%20-%20Hey%20Daddy%20%28Daddy%27s%20Home%29.mp3"
-        );
-        song.volume = 5.7;
-      }
-      song.currentTime = 0;
-      song.play();
-    }
-
-    function stopSong() {
-      if (song) {
-        song.pause();
-        song.currentTime = 0;
-      }
-    }
-
-    /* BUTTON LOGIC */
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
-
-    let yesScale = 1;
-
-    noBtn.addEventListener("click", () => {
-      // Move NO button
-      const x = Math.random() * (window.innerWidth - 120);
-      const y = Math.random() * (window.innerHeight - 80);
-      noBtn.style.left = x + "px";
-      noBtn.style.top = y + "px";
-
-      // Grow YES button
-      yesScale += 0.25;
-      yesBtn.style.transform = `scale(${yesScale})`;
-    });
-
-    yesBtn.addEventListener("click", () => {
-      playSong();
-
-      document.getElementById("question").style.display = "none";
-      document.getElementById("controls").style.display = "none";
-
-      const finalScreen = document.createElement("div");
-      finalScreen.innerHTML = `
-        <h1>
-          YAY!! 💕🥰<br><br>
-          Can’t wait 💝
-        </h1>
-        <div class="final-buttons">
-          <button onclick="playSong()">Replay 🎶</button>
-          <button class="stop-btn" onclick="stopSong()">Stop ⏹️</button>
-        </div>
-      `;
-      document.body.appendChild(finalScreen);
-
-      for (let i = 0; i < 120; i++) {
-        const confetti = document.createElement("div");
-        confetti.className = "confetti";
-        confetti.style.left = Math.random() * 100 + "vw";
-        confetti.style.backgroundColor =
-          ["#ff4d6d", "#ffd1dc", "#ff99ac", "#ffffff"][
-            Math.floor(Math.random() * 4)
-          ];
-        confetti.style.animationDuration = 2 + Math.random() * 2 + "s";
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 3000);
-      }
-    });
-  </script>
+  });
+</script>
 
 </body>
 </html>
