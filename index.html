@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Selena 💖 Valentine</title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -26,11 +25,6 @@
       z-index: 2;
     }
 
-    .buttons {
-      position: relative;
-      z-index: 2;
-    }
-
     button {
       font-size: 1.4rem;
       padding: 14px 28px;
@@ -43,16 +37,18 @@
     #yesBtn {
       background-color: #ff4d6d;
       color: white;
+      z-index: 2;
     }
 
     #noBtn {
       background-color: #bfbfbf;
-      position: absolute;
+      position: fixed;
+      z-index: 2;
     }
 
     /* Hearts */
     .heart {
-      position: absolute;
+      position: fixed;
       font-size: 20px;
       animation: floatUp linear infinite;
       opacity: 0.75;
@@ -66,7 +62,7 @@
 
     /* Confetti */
     .confetti {
-      position: absolute;
+      position: fixed;
       width: 10px;
       height: 10px;
       animation: fall 3s linear forwards;
@@ -93,18 +89,13 @@
 
   <h1 id="question">Selena, will you be my Valentine? 💖</h1>
 
-  <div class="buttons" id="buttons">
+  <div id="controls">
     <button id="yesBtn">Yes ❤️</button>
     <button id="noBtn">No 😐</button>
   </div>
 
-  <!-- AUDIO (kept in DOM at all times for iOS) -->
-  <audio id="song" preload="auto">
-    <source src="https://archive.org/download/usher-heydaddy/Usher%20-%20Hey%20Daddy%20%28Daddy%27s%20Home%29.mp3" type="audio/mpeg">
-  </audio>
-
   <script>
-    /* HEART BACKGROUND */
+    /* FLOATING HEARTS */
     function createHeart() {
       const heart = document.createElement("div");
       heart.className = "heart";
@@ -116,41 +107,50 @@
     }
     setInterval(createHeart, 450);
 
-    /* RUNAWAY NO BUTTON */
-    let yesScale = 1;
-    const noBtn = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-
-    noBtn.addEventListener("click", () => {
-      const x = Math.random() * (window.innerWidth - 140);
-      const y = Math.random() * (window.innerHeight - 100);
-      noBtn.style.left = x + "px";
-      noBtn.style.top = y + "px";
-
-      yesScale += 0.25;
-      yesBtn.style.transform = `scale(${yesScale})`;
-    });
-
-    /* MUSIC CONTROLS (iOS SAFE) */
-    const song = document.getElementById("song");
+    /* MUSIC (iOS-SAFE) */
+    let song;
 
     function playSong() {
+      if (!song) {
+        song = new Audio(
+          "https://archive.org/download/usher-heydaddy/Usher%20-%20Hey%20Daddy%20%28Daddy%27s%20Home%29.mp3"
+        );
+        song.volume = 0.7;
+      }
       song.currentTime = 0;
-      song.volume = 0.7;
       song.play();
     }
 
     function stopSong() {
-      song.pause();
-      song.currentTime = 0;
+      if (song) {
+        song.pause();
+        song.currentTime = 0;
+      }
     }
 
-    /* YES CLICK — MUST BE DIRECT USER ACTION */
+    /* BUTTON LOGIC */
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
+
+    let yesScale = 1;
+
+    noBtn.addEventListener("click", () => {
+      // Move NO button
+      const x = Math.random() * (window.innerWidth - 120);
+      const y = Math.random() * (window.innerHeight - 80);
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+
+      // Grow YES button
+      yesScale += 0.25;
+      yesBtn.style.transform = `scale(${yesScale})`;
+    });
+
     yesBtn.addEventListener("click", () => {
       playSong();
 
       document.getElementById("question").style.display = "none";
-      document.getElementById("buttons").style.display = "none";
+      document.getElementById("controls").style.display = "none";
 
       const finalScreen = document.createElement("div");
       finalScreen.innerHTML = `
